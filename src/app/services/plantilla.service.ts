@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core';
 	providedIn: 'root',
 })
 export class PlantillaService {
-	private plantillas: Plantilla[];
+	public plantillas: Plantilla[] = [];
 	constructor() {
-		
+		this.cargaDenuncias();
 	}
 
 	setTemp(_plantillas: Plantilla[]) {
@@ -25,6 +25,35 @@ export class PlantillaService {
 		}
 		return null;
 	}
+
+	async cargaDenuncias() {
+		const denuncia:File = await fetch('https://raw.githubusercontent.com/giacca90/AntiCensuraTelegram/master/archivos/denuncia%20pedraz%20CGPJ.odt').then(response => response.blob()).then(blob => {
+			return new File([blob], 'Denuncia pedraz CGPJ', { type: blob.type });
+		});
+		this.plantillas.push(new Plantilla(1, denuncia));
+
+		const denuncia2:File = await fetch('https://raw.githubusercontent.com/giacca90/AntiCensuraTelegram/master/archivos/denuncia%20pedraz%20constitucional.odt').then(response => response.blob()).then(blob => {
+			return new File([blob], 'Denuncia pedraz Constitucional', { type: blob.type });
+		});
+		this.plantillas.push(new Plantilla(2, denuncia2));
+
+		const denuncia3:File = await fetch('https://raw.githubusercontent.com/giacca90/AntiCensuraTelegram/master/archivos/denuncia%20pedraz%20defensor%20del%20pueblo.odt').then(response => response.blob()).then(blob => {
+			return new File([blob], 'Denuncia pedraz Defensor del Pueblo', { type: blob.type });
+		});
+		this.plantillas.push(new Plantilla(3, denuncia3));
+		
+		const denuncia4:File = await fetch('https://raw.githubusercontent.com/giacca90/AntiCensuraTelegram/master/archivos/denuncia%20pedraz%20europa.odt').then(response => response.blob()).then(blob => {
+			return new File([blob], 'Denuncia pedraz Europa', { type: blob.type });
+		});
+		this.plantillas.push(new Plantilla(4, denuncia4));
+
+		const denuncia5:File = await fetch('https://raw.githubusercontent.com/giacca90/AntiCensuraTelegram/master/archivos/denuncia%20pedraz%20fiscalia.odt').then(response => response.blob()).then(blob => {
+			return new File([blob], 'Denuncia pedraz Fiscalia', { type: blob.type });
+		});
+		this.plantillas.push(new Plantilla(5, denuncia5));
+
+	}
+
 }
 
 export class Plantilla {

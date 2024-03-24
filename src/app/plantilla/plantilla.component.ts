@@ -1,10 +1,6 @@
 import { Component, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ClienteDinamico } from '../agregar/agregar.component';
-import { Status } from '../status/status.component'; 
-import { StatusService } from '../services/status.service'; 
+import { ActivatedRoute } from '@angular/router'; 
 import { Plantilla, PlantillaService } from '../services/plantilla.service';
-import { ClientesService,} from '../services/clientes.service';
 import { IpcService } from '../services/ipc-render.service';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -36,17 +32,14 @@ export class PlantillaComponent implements OnDestroy{
 	generos: boolean = false;
 	plurales: boolean = false;
 	cortina:boolean = false;
-	clientesTemporales:Array<ClienteDinamico>;
+
 
 	constructor(
     public PS: PlantillaService,
-    public CS: ClientesService,
-    public SS: StatusService,
     public IPC: IpcService,
     private cdr: ChangeDetectorRef
 	) {
 		IPC.clear();
-		this.clientesTemporales = this.CS.clientes;
 		this.id = this.route.snapshot.queryParams['id'];
 		//   console.log('id: ' + this.id);
 		if(this.id) {
@@ -102,13 +95,7 @@ export class PlantillaComponent implements OnDestroy{
 		this.estadoCargaInicial = false;
 		this.cambiaColor();
 		this.cdr.detectChanges();
-
-		if (this.file.name.endsWith('odt')) {
-			this.vistaOdt();
-		}
-		if (this.file.name.endsWith('docx')) {
-			this.vistaDocx();
-		}
+		this.vistaOdt();
 	}
 
 	async vistaOdt() {
@@ -132,26 +119,6 @@ export class PlantillaComponent implements OnDestroy{
 		this.cdr.detectChanges();
 	}
 
-	async vistaDocx() {
-		if (typeof Worker !== 'undefined') {
-			// Create a new
-			this.worker = new Worker(
-				new URL('./vista-docx.worker', import.meta.url)
-			);
-			this.worker.postMessage(this.file);
-			this.worker.onmessage = ({ data }) => {
-				const view = document.getElementById('contentContainer');
-				view.innerHTML =
-          '<div id="contenido" style="width: 100%; height: 100%; overflow: hidden;">' +
-          data +
-          '</div>';
-			};
-		} else {
-			const view = document.getElementById('contentContainer');
-			view.innerHTML =
-        '<h3 text-color: red>NO SE PUEDE CARGAR UNA VISTA PREVIA!!!</h3>';
-		}
-	}
 
 	buscaClaves(fileString: string) {
 		let index: number = 0;
@@ -277,14 +244,12 @@ export class PlantillaComponent implements OnDestroy{
 		if(this.claves.includes('$$$')) {
 			nombreFinal = numeroDocumento+'_'+this.file.name;
 		}else{
-			nombreFinal = 'rellenado_' + this.file.name;
+			nombreFinal = 'rellenado_' + this.file.name+'.odt';
 		}
 		link.download = nombreFinal; 
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
-		const status = new Status((this.SS.getStatus().length+1), this.file.name, parejaStringArray, numeroDocumento, Date()); 
-		this.SS.addStatus(status, true);
 		if(this.IPC.isElectron())
 			this.IPC.send('addStatus', status.toString());
 	} 
@@ -359,39 +324,7 @@ export class PlantillaComponent implements OnDestroy{
 		console.log('crea nuevo archivo');
 	}
 
-	completa(id:number) {
-		const cliente: ClienteDinamico = this.CS.getClienteForId(id);
-		console.log('Cliente obtenido: ' + cliente.toString());
-		for (const atributo of cliente.atributos) {
-			for (const clave of this.claves) {
-				if (clave === atributo.clave) {
-					const a = document.getElementById(clave) as HTMLInputElement;
-					a.value = atributo.valor;
-					a.classList.remove('campoVacio');
-					a.classList.add('campoValido');
-					a.removeAttribute('placeholder');
-				}
-			}
-		}
-		this.cortina = false;
-		this.cdr.detectChanges();
-	}
 
-	buscaCliente() {
-		const val:string = (document.getElementById('opciones') as HTMLInputElement).value;
-		console.log('buscaCliente: '+val);
-		this.clientesTemporales = [];
-		this.CS.clientes.forEach((cliente) => {
-			if(cliente.toString().toLowerCase().includes(val.toLowerCase())){
-				this.clientesTemporales.push(cliente);
-			}
-		});
-		this.cdr.detectChanges();
-	}
-
-	abreCortina() {
-		this.cortina = true;
-		this.cdr.detectChanges();
-	}
+	
   
 }
