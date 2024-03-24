@@ -19,53 +19,7 @@ export class HomeComponent implements OnInit {
 	constructor(public PS: PlantillaService, public ipcRenderer: IpcService, private cdr: ChangeDetectorRef) {  }
 
 	ngOnInit(): void {
-		if (this.PS.getTemp()) {
-			this.plantillasBuscadas = this.PS.getTemp();
-		} 
-		if(this.ipcRenderer.isElectron()) { 
-			const plantillas:Plantilla[] = [];
-			this.ipcRenderer.send('PersistenciaCarpeta');
-			this.ipcRenderer.on('Carpeta', (_event, files:string[]) => {
-				for(let i=0; i<files.length; i++) {
-					//            console.log("Prueba: "+files[i]);
-					if(files[i].endsWith('odt') || files[i].endsWith('docx')) 
-						plantillas.push(new Plantilla(i+1, null, files[i].split('/').slice(-1)[0], files[i]));
-				}
-				this.PS.setTemp(plantillas);
-				this.plantillasBuscadas = plantillas;
-				this.cdr.detectChanges();
-			});
-			const selector = document.createElement('button');
-			selector.innerText = 'Elige una carpeta';
-			selector.addEventListener('click', () => this.abreDialog());
-			const dom = document.getElementById('selector');
-			dom.appendChild(selector);
-		} else {
-			const selector = document.createElement('input');
-			selector.type = 'file';
-			selector.name = 'plantillas';
-			selector.webkitdirectory = true;
-			selector.multiple = true;
-			selector.onchange = () => {
-				this.PS.setTemp([]);
-				if (selector.files) {  
-					const plantillas:Plantilla[] = [];
-					for (let i = 0; i < selector.files.length; i++) {
-						if (
-							selector.files[i].name.endsWith('odt') ||
-                selector.files[i].name.endsWith('docx')
-						) {
-							plantillas.push(new Plantilla(i + 1, selector.files[i]));
-						}
-					}
-					this.PS.setTemp(plantillas);
-					this.plantillasBuscadas = plantillas;
-					this.cdr.detectChanges();
-				}
-			};
-			const dom = document.getElementById('selector');
-			dom.appendChild(selector);
-		}
+		
 	}
 
 	busca() {
